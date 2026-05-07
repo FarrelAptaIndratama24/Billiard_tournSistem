@@ -4,6 +4,15 @@ import { NextResponse } from "next/server";
 export async function middleware(req: any) {
   const res = NextResponse.next();
 
+  // ← Izinkan akses ke auth routes tanpa cek session
+  const isLoginApi = req.nextUrl.pathname === "/api/login";
+  const isRegisterApi = req.nextUrl.pathname === "/api/register";
+  const isLoginPage = req.nextUrl.pathname === "/login";
+
+  if (isLoginApi || isRegisterApi || isLoginPage) {
+    return res; // langsung lanjut, skip auth check
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -23,10 +32,16 @@ export async function middleware(req: any) {
   );
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
+    if (req.nextUrl.pathname.startsWith("/api/")) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 },
+      );
+    }
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
@@ -34,5 +49,11 @@ export async function middleware(req: any) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/players/:path*", "/matches/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/players/:path*",
+    "/matches/:path*",
+    "/api/:path*",
+    "/login",
+  ],
 };

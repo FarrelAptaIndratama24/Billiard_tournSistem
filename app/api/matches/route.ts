@@ -1,21 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { getUserRole } from "@/lib/auth";
-import { createClient } from "@supabase/supabase-js";
-
-function getSupabaseFromRequest(req: Request) {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      global: {
-        headers: {
-          Authorization: req.headers.get("Authorization") || "",
-        },
-      },
-    },
-  );
-}
+// Pastikan path import ini mengarah ke file tempat Anda membuat fungsi getUserSession & getUserRole
+import { getUserSession, getUserRole } from "@/lib/auth";
 
 /* ======================
    GET MATCHES
@@ -49,11 +35,8 @@ export async function GET() {
 ====================== */
 export async function POST(req: Request) {
   try {
-    const supabase = getSupabaseFromRequest(req);
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    // 1. GUNAKAN getUserSession() UNTUK MEMBACA DARI COOKIES
+    const user = await getUserSession();
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -69,7 +52,6 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-
     const { player1_id, player2_id, player1_name, player2_name, match_date } =
       body;
 
@@ -79,12 +61,11 @@ export async function POST(req: Request) {
     /* ======================
        CONVERT NAME → UUID
     ====================== */
-
     if (!p1 && player1_name) {
       const { data } = await supabaseAdmin
         .from("players")
         .select("id")
-        .ilike("nickname", player1_name)
+        .ilike("full_name", player1_name)
         .single();
 
       if (!data) {
@@ -93,7 +74,6 @@ export async function POST(req: Request) {
           { status: 404 },
         );
       }
-
       p1 = data.id;
     }
 
@@ -101,7 +81,7 @@ export async function POST(req: Request) {
       const { data } = await supabaseAdmin
         .from("players")
         .select("id")
-        .ilike("nickname", player2_name)
+        .ilike("full_name", player2_name)
         .single();
 
       if (!data) {
@@ -110,7 +90,6 @@ export async function POST(req: Request) {
           { status: 404 },
         );
       }
-
       p2 = data.id;
     }
 
@@ -149,16 +128,12 @@ export async function POST(req: Request) {
 }
 
 /* ======================
-   UPDATE MATCH RESULT
-   (ADMIN ONLY)
+   UPDATE MATCH RESULT (ADMIN ONLY)
 ====================== */
 export async function PUT(req: Request) {
   try {
-    const supabase = getSupabaseFromRequest(req);
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    // 2. GUNAKAN getUserSession() DI SINI JUGA
+    const user = await getUserSession();
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -179,10 +154,6 @@ export async function PUT(req: Request) {
     if (player1_score < 0 || player2_score < 0) {
       return NextResponse.json({ error: "Score tidak valid" }, { status: 400 });
     }
-
-    /* ======================
-       GET MATCH DATA
-    ====================== */
 
     const { data: match, error: matchError } = await supabaseAdmin
       .from("matches")
@@ -205,7 +176,6 @@ export async function PUT(req: Request) {
     }
 
     let winner_id;
-
     if (player1_score > player2_score) {
       winner_id = match.player1_id;
     } else if (player2_score > player1_score) {
@@ -216,10 +186,6 @@ export async function PUT(req: Request) {
         { status: 400 },
       );
     }
-
-    /* ======================
-       UPDATE MATCH
-    ====================== */
 
     const { data, error } = await supabaseAdmin
       .from("matches")

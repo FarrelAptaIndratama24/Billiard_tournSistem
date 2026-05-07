@@ -13,26 +13,12 @@ interface LeaderboardPlayer {
   win_rate: number;
 }
 
-const medals = ["🥇", "🥈", "🥉"];
-
-const rankStyle = (index: number) => {
+const rankBadge = (index: number) => {
   if (index === 0)
-    return "bg-gradient-to-br from-yellow-400 to-amber-600 text-neutral-950 shadow-[0_0_16px_rgba(234,179,8,0.6)] ring-2 ring-yellow-400/40";
-  if (index === 1)
-    return "bg-gradient-to-br from-neutral-200 to-neutral-400 text-neutral-950 shadow-[0_0_10px_rgba(200,200,200,0.3)]";
-  if (index === 2)
-    return "bg-gradient-to-br from-amber-600 to-amber-900 text-white shadow-[0_0_10px_rgba(180,100,20,0.4)]";
-  return "bg-neutral-800/80 text-neutral-400";
-};
-
-const rowGlow = (index: number) => {
-  if (index === 0)
-    return "bg-gradient-to-r from-yellow-500/5 via-transparent to-transparent";
-  if (index === 1)
-    return "bg-gradient-to-r from-neutral-300/5 via-transparent to-transparent";
-  if (index === 2)
-    return "bg-gradient-to-r from-amber-700/5 via-transparent to-transparent";
-  return "";
+    return "bg-orange-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.5)]";
+  if (index === 1) return "bg-neutral-200 text-neutral-900";
+  if (index === 2) return "bg-amber-700 text-white";
+  return "bg-neutral-800 text-neutral-500";
 };
 
 export default function LeaderboardPage() {
@@ -57,211 +43,268 @@ export default function LeaderboardPage() {
     fetchLeaderboard();
   }, []);
 
+  const podiumOrder = [
+    {
+      realIndex: 1,
+      label: "2ND",
+      rankColor: "text-neutral-400",
+      borderColor: "border-neutral-700/40",
+      bgColor: "bg-neutral-900/60",
+      numberColor: "text-neutral-300",
+      barHeight: "h-10",
+      mobileOrder: "order-2 md:order-none",
+    },
+    {
+      realIndex: 0,
+      label: "1ST",
+      rankColor: "text-orange-500",
+      borderColor: "border-orange-500/40",
+      bgColor: "bg-neutral-900/80",
+      numberColor: "text-white",
+      barHeight: "h-16",
+      mobileOrder: "order-1 md:order-none",
+    },
+    {
+      realIndex: 2,
+      label: "3RD",
+      rankColor: "text-amber-600",
+      borderColor: "border-amber-700/40",
+      bgColor: "bg-neutral-900/60",
+      numberColor: "text-neutral-300",
+      barHeight: "h-10",
+      mobileOrder: "order-3 md:order-none",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-200">
-      {/* Ambient background glow */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-10%] left-[10%] w-[600px] h-[600px] rounded-full bg-orange-600/5 blur-[120px]" />
-        <div className="absolute bottom-[5%] right-[5%] w-[400px] h-[400px] rounded-full bg-orange-500/4 blur-[100px]" />
-        <div className="absolute top-[40%] left-[50%] w-[300px] h-[300px] rounded-full bg-amber-600/3 blur-[80px]" />
+    <div className="flex flex-col md:flex-row min-h-screen bg-[#0a0a0a] text-neutral-200">
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[250px] bg-orange-600/5 blur-[100px]" />
       </div>
 
       <Sidebar />
 
-      <main className="ml-64 p-10 relative z-10">
+      <main className="flex-1 w-full px-4 py-6 md:px-6 md:py-10 lg:px-12 lg:py-12 relative z-10 overflow-x-hidden">
         {/* Header */}
-        <header className="mb-12">
-          <div className="flex items-end justify-between">
-            <div>
-              <p className="text-orange-500 text-xs font-semibold tracking-[0.3em] uppercase mb-2">
-                Season Rankings
-              </p>
-              <h1 className="text-4xl font-black text-white tracking-tight leading-none">
-                Top Players
-                <span className="ml-3 text-4xl">🏆</span>
-              </h1>
-              <p className="text-neutral-500 mt-2 text-sm">
-                Peringkat berdasarkan total poin tertinggi
-              </p>
-            </div>
-            <div className="text-right hidden md:block">
-              <p className="text-xs text-neutral-600 uppercase tracking-widest mb-1">
-                Total Players
-              </p>
-              <p className="text-3xl font-black text-orange-500">
-                {loading ? "—" : players.length}
-              </p>
-            </div>
+        <header className="mb-8 md:mb-10">
+          <div className="flex items-center gap-2.5 mb-2">
+            <div className="w-1 h-4 rounded-full bg-orange-500" />
+            <p className="text-orange-500 text-[11px] font-bold tracking-[0.25em] uppercase">
+              Season Rankings
+            </p>
           </div>
-
-          {/* Divider line */}
-          <div className="mt-8 h-px bg-gradient-to-r from-orange-500/40 via-neutral-700/40 to-transparent" />
+          <div className="flex items-end justify-between">
+            <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
+              Leaderboard
+            </h1>
+            {!loading && (
+              <p className="text-sm text-neutral-600">
+                <span className="text-orange-500 font-bold">
+                  {players.length}
+                </span>{" "}
+                players
+              </p>
+            )}
+          </div>
+          <div className="mt-5 h-px bg-neutral-800" />
         </header>
 
-        {/* Top 3 Podium Cards */}
+        {/* Top 3 Podium */}
         {!loading && !error && players.length >= 3 && (
-          <div className="grid grid-cols-3 gap-4 mb-10">
-            {[players[1], players[0], players[2]].map((player, i) => {
-              const realIndex = i === 0 ? 1 : i === 1 ? 0 : 2;
-              const isFirst = realIndex === 0;
-              return (
-                <div
-                  key={player.id}
-                  className={`relative rounded-2xl p-6 border text-center flex flex-col items-center gap-2 transition-transform hover:-translate-y-1 ${
-                    isFirst
-                      ? "bg-gradient-to-b from-yellow-500/10 to-neutral-900 border-yellow-500/20 shadow-[0_0_40px_rgba(234,179,8,0.08)] -mt-4"
-                      : "bg-gradient-to-b from-neutral-800/40 to-neutral-900/60 border-neutral-700/30"
-                  }`}
-                >
-                  {isFirst && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-amber-500 text-neutral-950 text-[10px] font-black px-3 py-1 rounded-full tracking-widest uppercase shadow-lg">
-                      Champion
-                    </div>
-                  )}
-                  <span className="text-3xl mt-1">{medals[realIndex]}</span>
+          <div className="flex flex-col md:grid md:grid-cols-3 gap-3 md:gap-4 mb-8 items-stretch md:items-end">
+            {podiumOrder.map(
+              ({
+                realIndex,
+                label,
+                rankColor,
+                borderColor,
+                bgColor,
+                numberColor,
+                barHeight,
+                mobileOrder,
+              }) => {
+                const player = players[realIndex];
+                const isFirst = realIndex === 0;
+                return (
                   <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center font-black text-lg ${rankStyle(realIndex)}`}
+                    key={player.id}
+                    className={`relative rounded-xl border ${borderColor} ${bgColor} overflow-hidden transition-transform duration-200 hover:-translate-y-0.5 ${mobileOrder}`}
                   >
-                    {realIndex + 1}
+                    {/* Top accent line */}
+                    <div
+                      className={`h-0.5 w-full ${
+                        isFirst
+                          ? "bg-gradient-to-r from-orange-500 via-orange-400 to-orange-500/30"
+                          : realIndex === 1
+                            ? "bg-neutral-600/60"
+                            : "bg-amber-700/60"
+                      }`}
+                    />
+
+                    <div className="p-4 md:p-5 flex flex-col items-center gap-3">
+                      {/* Giant rank number */}
+                      <div className="relative flex flex-col items-center">
+                        <span
+                          className={`text-5xl md:text-[64px] font-black leading-none tabular-nums ${rankColor} ${isFirst ? "drop-shadow-[0_0_30px_rgba(249,115,22,0.4)]" : ""}`}
+                        >
+                          {realIndex + 1}
+                        </span>
+                        <span
+                          className={`text-[10px] font-black tracking-[0.3em] -mt-1 ${rankColor}`}
+                        >
+                          {label}
+                        </span>
+                      </div>
+
+                      {/* Divider */}
+                      <div className="w-8 h-px bg-neutral-700" />
+
+                      {/* Avatar */}
+                      <div
+                        className={`w-11 h-11 rounded-xl flex items-center justify-center font-black text-lg border ${
+                          isFirst
+                            ? "bg-orange-500/10 border-orange-500/30 text-orange-400"
+                            : realIndex === 1
+                              ? "bg-neutral-800 border-neutral-700 text-neutral-400"
+                              : "bg-amber-700/10 border-amber-700/30 text-amber-600"
+                        }`}
+                      >
+                        {player.full_name.charAt(0).toUpperCase()}
+                      </div>
+
+                      {/* Name */}
+                      <div className="text-center">
+                        <p
+                          className={`font-bold text-sm leading-tight ${numberColor}`}
+                        >
+                          {player.full_name}
+                        </p>
+                      </div>
+
+                      {/* Points */}
+                      <div
+                        className={`w-full rounded-lg py-2.5 text-center ${
+                          isFirst ? "bg-orange-500/10" : "bg-neutral-800/60"
+                        }`}
+                      >
+                        <p
+                          className={`text-xl font-black tabular-nums ${isFirst ? "text-orange-400" : "text-neutral-400"}`}
+                        >
+                          {player.total_points}
+                          <span className="text-xs font-normal text-neutral-600 ml-1">
+                            pts
+                          </span>
+                        </p>
+                        <p className="text-[10px] text-neutral-600 mt-0.5">
+                          {player.win_rate.toFixed(1)}% win rate
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <p
-                    className={`font-bold text-sm mt-1 ${isFirst ? "text-white" : "text-neutral-300"}`}
-                  >
-                    {player.full_name}
-                  </p>
-                  <p
-                    className={`text-2xl font-black ${isFirst ? "text-orange-400" : "text-orange-500/80"}`}
-                  >
-                    {player.total_points}
-                    <span className="text-xs font-medium ml-1 text-neutral-500">
-                      pts
-                    </span>
-                  </p>
-                  <p className="text-xs text-neutral-500">
-                    {player.win_rate.toFixed(1)}% Win Rate
-                  </p>
-                </div>
-              );
-            })}
+                );
+              },
+            )}
           </div>
         )}
 
         {/* Table */}
-        <div className="rounded-2xl overflow-hidden border border-neutral-800/60 shadow-2xl bg-neutral-900/40 backdrop-blur-sm">
-          {/* Table header strip */}
-          <div className="h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-transparent" />
+        <div className="rounded-xl border border-neutral-800 overflow-hidden bg-neutral-900/40">
+          <div className="h-[2px] bg-gradient-to-r from-orange-500 via-orange-400/40 to-transparent" />
 
           {loading ? (
-            <div className="p-16 text-center flex flex-col items-center justify-center gap-4">
-              <div className="relative w-12 h-12">
-                <div className="absolute inset-0 rounded-full border-4 border-orange-500/10" />
-                <div className="absolute inset-0 rounded-full border-4 border-t-orange-500 animate-spin" />
-              </div>
-              <p className="text-neutral-500 text-sm">Memuat klasemen...</p>
+            <div className="p-10 md:p-20 flex flex-col items-center gap-3">
+              <div className="w-8 h-8 rounded-full border-2 border-neutral-800 border-t-orange-500 animate-spin" />
+              <p className="text-neutral-600 text-sm">Memuat klasemen...</p>
             </div>
           ) : error ? (
-            <div className="p-8 m-6 text-center text-red-400 bg-red-500/8 rounded-xl border border-red-500/15">
-              <p className="text-2xl mb-2">⚠️</p>
-              {error}
+            <div className="m-4 md:m-6 p-4 md:p-6 rounded-lg bg-red-500/5 border border-red-500/10 text-red-400 text-sm text-center">
+              ⚠️ {error}
             </div>
           ) : players.length === 0 ? (
-            <div className="p-16 text-center text-neutral-600 text-sm">
+            <div className="p-10 md:p-20 text-center text-neutral-600 text-sm">
               Belum ada data pemain.
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
+              <table className="w-full text-left min-w-[600px]">
                 <thead>
-                  <tr className="border-b border-neutral-800/60">
-                    <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-500 w-20 text-center">
-                      Rank
-                    </th>
-                    <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-500">
-                      Player
-                    </th>
-                    <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-500 text-center">
-                      Matches
-                    </th>
-                    <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-500 text-center">
-                      Wins
-                    </th>
-                    <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-500 text-center">
-                      Losses
-                    </th>
-                    <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-500 text-right">
-                      Points
-                    </th>
-                    <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-500 text-right">
-                      Win Rate
-                    </th>
+                  <tr className="border-b border-neutral-800">
+                    {[
+                      "#",
+                      "Player",
+                      "Matches",
+                      "W",
+                      "L",
+                      "Points",
+                      "Win Rate",
+                    ].map((h, i) => (
+                      <th
+                        key={h}
+                        className={`px-4 md:px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-neutral-600 ${
+                          i === 0
+                            ? "w-10 md:w-14 text-center"
+                            : i === 1
+                              ? ""
+                              : i >= 5
+                                ? "text-right"
+                                : "text-center"
+                        }`}
+                      >
+                        {h}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {players.map((player, index) => (
                     <tr
                       key={player.id}
-                      className={`border-b border-neutral-800/30 group transition-all duration-200 hover:bg-orange-500/5 ${rowGlow(index)}`}
+                      className={`border-b border-neutral-800/40 group transition-colors duration-150 hover:bg-white/[0.02] ${
+                        index === 0 ? "bg-orange-500/[0.03]" : ""
+                      }`}
                     >
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-4 md:px-5 py-3.5 text-center">
                         <span
-                          className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${rankStyle(index)}`}
+                          className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold ${rankBadge(index)}`}
                         >
                           {index + 1}
                         </span>
                       </td>
-
-                      <td className="px-6 py-4">
+                      <td className="px-4 md:px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-neutral-700 to-neutral-800 flex items-center justify-center text-xs font-bold text-neutral-400 border border-neutral-700/50 flex-shrink-0">
+                          <div className="w-7 h-7 rounded-lg bg-neutral-800 border border-neutral-700/50 flex items-center justify-center text-xs font-bold text-neutral-500 flex-shrink-0">
                             {player.full_name.charAt(0).toUpperCase()}
                           </div>
-                          <span className="font-semibold text-neutral-200 group-hover:text-orange-400 transition-colors text-sm">
+                          <span className="font-semibold text-sm text-neutral-300 group-hover:text-white transition-colors">
                             {player.full_name}
                           </span>
-                          {index < 3 && (
-                            <span className="text-base leading-none">
-                              {medals[index]}
-                            </span>
-                          )}
                         </div>
                       </td>
-
-                      <td className="px-6 py-4 text-center">
-                        <span className="text-sm text-neutral-400 tabular-nums">
-                          {player.matches_played}
-                        </span>
+                      <td className="px-4 md:px-5 py-3.5 text-center text-sm text-neutral-500 tabular-nums">
+                        {player.matches_played}
                       </td>
-
-                      <td className="px-6 py-4 text-center">
-                        <span className="text-sm text-emerald-400/80 tabular-nums font-medium">
-                          {player.wins}
-                        </span>
+                      <td className="px-4 md:px-5 py-3.5 text-center text-sm text-emerald-500 tabular-nums font-medium">
+                        {player.wins}
                       </td>
-
-                      <td className="px-6 py-4 text-center">
-                        <span className="text-sm text-red-400/70 tabular-nums font-medium">
-                          {player.losses}
-                        </span>
+                      <td className="px-4 md:px-5 py-3.5 text-center text-sm text-red-500/70 tabular-nums font-medium">
+                        {player.losses}
                       </td>
-
-                      <td className="px-6 py-4 text-right">
-                        <span className="text-sm font-black bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent tabular-nums">
+                      <td className="px-4 md:px-5 py-3.5 text-right tabular-nums">
+                        <span className="text-sm font-black text-orange-400">
                           {player.total_points}
                         </span>
-                        <span className="text-xs text-neutral-600 ml-1">
+                        <span className="text-xs text-neutral-700 ml-1">
                           pts
                         </span>
                       </td>
-
-                      <td className="px-6 py-4 text-right">
-                        <div className="inline-flex flex-col items-end gap-1">
-                          <span className="text-sm font-bold text-orange-500/90 tabular-nums">
+                      <td className="px-4 md:px-5 py-3.5 text-right">
+                        <div className="inline-flex flex-col items-end gap-1.5">
+                          <span className="text-sm font-bold text-neutral-300 tabular-nums">
                             {player.win_rate.toFixed(1)}%
                           </span>
-                          {/* Mini progress bar */}
-                          <div className="w-16 h-1 rounded-full bg-neutral-800 overflow-hidden">
+                          <div className="w-14 h-0.5 rounded-full bg-neutral-800">
                             <div
-                              className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-400"
+                              className="h-full rounded-full bg-orange-500"
                               style={{
                                 width: `${Math.min(player.win_rate, 100)}%`,
                               }}
@@ -277,10 +320,9 @@ export default function LeaderboardPage() {
           )}
         </div>
 
-        {/* Footer note */}
         {!loading && !error && players.length > 0 && (
-          <p className="text-center text-neutral-700 text-xs mt-6">
-            Showing {players.length} players · Updated in real-time
+          <p className="text-center text-neutral-800 text-xs mt-5">
+            {players.length} players · live
           </p>
         )}
       </main>

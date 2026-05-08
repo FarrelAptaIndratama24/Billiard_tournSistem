@@ -240,19 +240,32 @@ export default function PlayersPage() {
                 Player Directory
               </p>
             </div>
-            <div className="flex items-end justify-between">
-              <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
-                Daftar Pemain
-              </h1>
-              {!loading && (
-                <p className="text-sm text-neutral-600">
-                  <span className="text-orange-500 font-bold">
-                    {players.length}
-                  </span>{" "}
-                  players
-                </p>
-              )}
+
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-end gap-3">
+                <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
+                  Daftar Pemain
+                </h1>
+                {!loading && (
+                  <p className="text-sm text-neutral-600 mb-1">
+                    <span className="text-orange-500 font-bold">
+                      {players.length}
+                    </span>{" "}
+                    players
+                  </p>
+                )}
+              </div>
+
+              {/* Tombol Tambah Pemain */}
+              <button
+                onClick={openCreate}
+                className="flex items-center gap-2 px-4 py-2.5 bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white text-sm font-bold rounded-xl transition-colors shadow-lg shadow-orange-900/30 flex-shrink-0"
+              >
+                <span className="text-lg leading-none">+</span>
+                <span>Tambah Pemain</span>
+              </button>
             </div>
+
             <div className="mt-5 h-px bg-neutral-800" />
           </header>
 
@@ -299,13 +312,19 @@ export default function PlayersPage() {
             </div>
           ) : players.length === 0 ? (
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 md:p-12 text-center">
-              <p className="text-zinc-600 text-sm">
+              <p className="text-zinc-600 text-sm mb-4">
                 Belum ada pemain terdaftar.
               </p>
+              <button
+                onClick={openCreate}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-orange-600 hover:bg-orange-500 text-white text-sm font-bold rounded-xl transition-colors"
+              >
+                <span>+</span>
+                <span>Tambah Pemain Pertama</span>
+              </button>
             </div>
           ) : (
             <>
-              {/* Swipe indicator - hanya tampil di mobile */}
               <div className="flex items-center justify-end gap-1.5 mb-2 md:hidden">
                 <span className="text-zinc-600 text-[10px]">
                   Geser untuk melihat lebih
